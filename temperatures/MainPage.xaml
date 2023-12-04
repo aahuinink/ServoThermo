@@ -1,40 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="temperatures.MainPage">
+             x:Class="temperatures.MainPage"
+             xmlns:viewmodel="clr-namespace:temperatures.ViewModel"
+             x:DataType="viewmodel:MainViewModel"
+             xmlns:drawables="clr-namespace:temperatures">
 
+    <ContentPage.Resources>
+        <drawables:LineDrawable x:Key="LineDrawable"/>
+    </ContentPage.Resources>
     <ScrollView>
         <VerticalStackLayout
             Spacing="25"
             Padding="30,0"
             VerticalOptions="Center">
-
-            <Image
-                Source="dotnet_bot.png"
-                SemanticProperties.Description="Cute dot net bot waving hi to you!"
-                HeightRequest="200"
-                HorizontalOptions="Center" />
-
-            <Label
-                Text="Hello, World!"
-                SemanticProperties.HeadingLevel="Level1"
-                FontSize="32"
-                HorizontalOptions="Center" />
-
-            <Label
-                Text="Welcome to .NET Multi-platform App UI"
-                SemanticProperties.HeadingLevel="Level2"
-                SemanticProperties.Description="Welcome to dot net Multi platform App U I"
-                FontSize="18"
-                HorizontalOptions="Center" />
-
-            <Button
-                x:Name="CounterBtn"
-                Text="Click me"
-                SemanticProperties.Hint="Counts the number of times you click"
-                Clicked="OnCounterClicked"
-                HorizontalOptions="Center" />
-
+            <HorizontalStackLayout>
+                <Label Text="Current Temp"/>
+                <Label Text="{Binding CurrentTemp}"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout>
+                <Label Text="Last Reading: "/>
+                <Label Text="{Binding LastReading}"/>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout>
+                <Label Text="Connection Status:"/>
+                <Label Text="{Binding ConnectionStatus}"/>
+            </HorizontalStackLayout>
+            <GraphicsView Drawable="{StaticResource lineDrawable}"
+                      x:Name="LineGraphView"
+                      HeightRequest="1000"
+                      WidthRequest="1100">
+            </GraphicsView>
+            
         </VerticalStackLayout>
     </ScrollView>
 
