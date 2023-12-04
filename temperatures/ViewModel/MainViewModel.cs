@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Layouts;
 using MQTTnet;
 using MQTTnet.Client;
 
@@ -23,8 +24,15 @@ namespace temperatures.ViewModel
         [ObservableProperty]
         public string lastReading;
 
+        [ObservableProperty]
+        public int selectedTemp;
+
+        [ObservableProperty]
+        public string setTempLabel;
+
         public MainViewModel()
         {
+            ConnectionStatus = "Connecting to broker...";
             Connect();
         }
 
@@ -67,9 +75,21 @@ namespace temperatures.ViewModel
 
         private Task Client_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
         {
-            CurrentTemp = $"{arg.ApplicationMessage.ConvertPayloadToString()} deg Celcius";
+            CurrentTemp = $" {arg.ApplicationMessage.ConvertPayloadToString()}\u00B0C";
             LastReading = DateTime.Now.ToString();
             return Task.CompletedTask;
+
         }
+
+        [RelayCommand]
+        private async Task SetTempButton_Pressed()
+        {
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic("ecet230/AaronH/setTemps")
+                .WithPayload(SelectedTemp.ToString())
+                .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
+                .Build();
+            await client.PublishAsync(message);
+        } 
     }
 }

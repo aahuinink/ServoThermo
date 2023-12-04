@@ -4,8 +4,8 @@
              x:Class="temperatures.MainPage"
              xmlns:viewmodel="clr-namespace:temperatures.ViewModel"
              x:DataType="viewmodel:MainViewModel"
-             xmlns:drawables="clr-namespace:temperatures">
-
+             xmlns:drawables="clr-namespace:temperatures"
+             xmlns:micro="clr-namespace:Microcharts;assembly=Microcharts.Maui">
     <ContentPage.Resources>
         <drawables:LineDrawable x:Key="LineDrawable"/>
     </ContentPage.Resources>
@@ -15,23 +15,36 @@
             Padding="30,0"
             VerticalOptions="Center">
             <HorizontalStackLayout>
-                <Label Text="Current Temp"/>
-                <Label Text="{Binding CurrentTemp}"/>
+                <Label Text="Current Temperature: "
+                       Margin="10"/>
+                <Label Text="{Binding CurrentTemp}"
+                       Margin="
+                       10"/>
             </HorizontalStackLayout>
             <HorizontalStackLayout>
-                <Label Text="Last Reading: "/>
-                <Label Text="{Binding LastReading}"/>
+                <Label Text="Last Reading: "
+                       Margin="10"/>
+                <Label Text="{Binding LastReading}"
+                       Margin="10"/>
             </HorizontalStackLayout>
             <HorizontalStackLayout>
-                <Label Text="Connection Status:"/>
-                <Label Text="{Binding ConnectionStatus}"/>
+                <Label Text="Connection Status: "
+                       Margin="10"/>
+                <Label Text="{Binding ConnectionStatus}"
+                       Margin="10"/>
             </HorizontalStackLayout>
-            <GraphicsView Drawable="{StaticResource lineDrawable}"
-                      x:Name="LineGraphView"
-                      HeightRequest="1000"
-                      WidthRequest="1100">
-            </GraphicsView>
-            
+            <HorizontalStackLayout>
+                <Label Text="Selected Temperature: "
+                       Margin="10"/>
+                <Label Text="{Binding SelectedTemp}"
+                       Margin="10"/>
+            </HorizontalStackLayout>
+            <Slider Maximum="30"
+                    Minimum="15"
+                    Value="{Binding SelectedTemp}"
+                     />
+            <Button Text="Set Temp"
+                    Command="{Binding SetTempButton_PressedCommand}"/>
         </VerticalStackLayout>
     </ScrollView>
 

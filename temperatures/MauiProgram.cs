@@ -1,4 +1,5 @@
-﻿using temperatures.ViewModel;
+﻿using Microcharts.Maui;
+using temperatures.ViewModel;
 
 namespace temperatures;
 
@@ -9,6 +10,7 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+			.UseMicrocharts()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
