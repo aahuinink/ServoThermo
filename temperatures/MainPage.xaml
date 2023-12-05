@@ -4,11 +4,8 @@
              x:Class="temperatures.MainPage"
              xmlns:viewmodel="clr-namespace:temperatures.ViewModel"
              x:DataType="viewmodel:MainViewModel"
-             xmlns:drawables="clr-namespace:temperatures"
-             xmlns:micro="clr-namespace:Microcharts;assembly=Microcharts.Maui">
-    <ContentPage.Resources>
-        <drawables:LineDrawable x:Key="LineDrawable"/>
-    </ContentPage.Resources>
+             xmlns:local="clr-namespace:temperatures;assembly=temperatures"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui">
     <ScrollView>
         <VerticalStackLayout
             Spacing="25"

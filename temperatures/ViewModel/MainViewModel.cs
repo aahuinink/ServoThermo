@@ -1,8 +1,13 @@
 ﻿using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore;
 using MQTTnet;
 using MQTTnet.Client;
+using LiveChartsCore.SkiaSharpView.VisualElements;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 
 namespace temperatures.ViewModel
 {
@@ -30,6 +35,25 @@ namespace temperatures.ViewModel
     }
     public partial class MainViewModel : ObservableObject
     {
+        // Charts stuff
+        public ISeries[] TemperatureData { get; set; }
+       = new ISeries[]
+       {
+            new LineSeries<double>
+            {
+                Values = new double[60],        // array to store temperatures
+                Fill = null
+            }
+       };
+        public LabelVisual Title { get; set; } =
+            new LabelVisual
+            {
+                Text = "Temperature History",
+                TextSize = 25,
+                Padding = new LiveChartsCore.Drawing.Padding(15),
+                Paint = new SolidColorPaint(SKColors.Blue)
+            };
+
         IMqttClient client = new MqttFactory().CreateMqttClient();
 
         [ObservableProperty]
