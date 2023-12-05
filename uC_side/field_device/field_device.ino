@@ -21,8 +21,8 @@ Stepper-related code had assistance from the "MotorKnob" example from the Steppe
 #define STEP_PIN0 0
 #define STEP_PIN1 1
 #define STEP_PIN2 2
-#define STEP_PIN3 3
-#define STEPS_PER_REV 64
+#define STEP_PIN3 1
+#define STEPS_PER_REV 2038
 #define STEPS_PER_DEGREE 10  // the number of stepper motor steps per degree on the thermostat
 //DHT defines
 #define DHT_PIN 4
@@ -63,6 +63,9 @@ void Reconnect();
 // reads a temp from the dht sensor and sends it to the mqtt broker
 void SendTemp();
 
+// set the thermostat to setTemp using the stepper motor
+void SetThermostat(int setTemp);
+
 // sets up a wifi connection: from 'mqtt_esp8266' example
 void SetupWifi();
 
@@ -83,7 +86,7 @@ void setup() {
   client.setServer(BROKER, 1883);   // sets up mqtt client on the broker at port 1883
   client.setCallback(Callback);     // sets message recieved event handler
   client.subscribe(INTOPIC);       // subscribe to the mosi topic
-  stepper.setSpeed(30);             // set stepper motor speed to 30 rpm
+  stepper.setSpeed(5);             // set stepper motor speed to 30 rpm
   lastReading = millis();           // get current time
   selectedTemp = (int)dht.readTemperature(); // get the current thermostat setting as the actual current temperature
 }
@@ -118,6 +121,7 @@ void loop() {
 // Function Definitions
 
 void Callback(char* topic, byte* payload, unsigned int length) {
+  // debugging boiler plate copied from mqtt example:
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
@@ -126,13 +130,26 @@ void Callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  // Switch on the LED if an 1 was received as first character
-  if ((char)payload[0] == '1') {
-    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-    // but actually the LED is on; this is because
-    // it is active low on the ESP-01)
-  } else {
-    digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
+  // get json object
+  DynamicJsonDocument doc(200); // added by me
+
+  DeserializationError error = deserializeJson(doc, payload); // added by me
+
+  // Test if parsing succeeds: copied from json example
+  if (error) {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+    return;
+  }
+  // end of copied code
+
+  if(1 == doc["Query"])     // request for the selected temperature
+  {
+    SendTemp(1);
+  }
+  else
+  {
+    SetThermostat(doc["SetTemp"]); // use the stepper motor to set the thermostat temperature
   }
 
 }
@@ -179,6 +196,12 @@ void SendTemp(int dataType)
   serializeJson(doc, payload);
 
   client.publish(OUTTOPIC, payload);
+  return;
+}
+
+void SetThermostat(int setTemp)
+{
+  stepper.step((setTemp - selectedTemp)*STEPS_PER_DEGREE);
   return;
 }
 

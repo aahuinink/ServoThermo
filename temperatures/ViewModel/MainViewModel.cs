@@ -116,7 +116,7 @@ namespace temperatures.ViewModel
         {
             string rec = arg.ApplicationMessage.ConvertPayloadToString();
             PayloadIn payloadIn = JsonSerializer.Deserialize<PayloadIn>(rec);
-            if (payloadIn.DataType == 1)
+            if (0 == payloadIn.DataType)
             {
                 CurrentTemp = $"{payloadIn.Temp}\u00B0C";
             }
