@@ -8,6 +8,8 @@ using MQTTnet.Client;
 using LiveChartsCore.SkiaSharpView.VisualElements;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
+using System.Collections.ObjectModel;
+using LiveChartsCore.Defaults;
 
 namespace temperatures.ViewModel
 {
@@ -20,7 +22,12 @@ namespace temperatures.ViewModel
         /// <summary>
         /// The temperature reading
         /// </summary>
-        public double Temp { get; set; }
+        public double CurrentTemp { get; set; }
+        /// <summary>
+        /// An array of temperature history
+        /// </summary>
+        public double[] TempHistory { get; set; }
+
     }
     public class PayloadOut
     {
@@ -35,32 +42,21 @@ namespace temperatures.ViewModel
     }
     public partial class MainViewModel : ObservableObject
     {
-        // Charts stuff
-        public ISeries[] TemperatureData { get; set; }
-       = new ISeries[]
-       {
-            new LineSeries<double>
-            {
-                Values = new double[60],        // array to store temperatures
-                Fill = null
-            }
-       };
-        public LabelVisual Title { get; set; } =
-            new LabelVisual
-            {
-                Text = "Temperature History",
-                TextSize = 25,
-                Padding = new LiveChartsCore.Drawing.Padding(15),
-                Paint = new SolidColorPaint(SKColors.Blue)
-            };
+        
 
-        IMqttClient client = new MqttFactory().CreateMqttClient();
+        public double CurrentTemp { get; set; }
+
+        IMqttClient client;
+
+        private ObservableCollection<ObservableValue> _temperatureHistory;
+
+        public ObservableCollection<ISeries> Series { get; set; }
 
         [ObservableProperty]
         public string connectionStatus;
 
         [ObservableProperty]
-        public string currentTemp;
+        public string currentTempString;
 
         [ObservableProperty]
         public string lastReading;
@@ -74,9 +70,30 @@ namespace temperatures.ViewModel
         public MainViewModel()
         {
             ConnectionStatus = "Connecting to broker...";
-            SelectedTemp = 22;
+            IMqttClient client = new MqttFactory().CreateMqttClient();          // create mqtt client
+            _temperatureHistory = new ObservableCollection<ObservableValue>();  // create place to store temp history values
+            Series = new ObservableCollection<ISeries>                          // create observable collection of line series
+            {
+                new LineSeries<ObservableValue>
+                {
+                    Values = _temperatureHistory,        // array to store temperatures
+                    Fill = null
+                }
+            };
+
             Connect();
         }
+        /// <summary>
+        /// Title for the Line Chart
+        /// </summary>
+        public LabelVisual Title { get; set; } =
+            new LabelVisual
+            {
+                Text = "Temperature History",
+                TextSize = 25,
+                Padding = new LiveChartsCore.Drawing.Padding(15),
+                Paint = new SolidColorPaint(SKColors.Blue)
+            };
 
         /// <summary>
         /// Connects client to MQTT broker
@@ -140,13 +157,22 @@ namespace temperatures.ViewModel
         {
             string rec = arg.ApplicationMessage.ConvertPayloadToString();
             PayloadIn payloadIn = JsonSerializer.Deserialize<PayloadIn>(rec);
-            if (0 == payloadIn.DataType)
+
+            if (0 == payloadIn.DataType)    // if data reading is an air temperature
             {
-                CurrentTemp = $"{payloadIn.Temp}\u00B0C";
+                CurrentTemp = Math.Round(payloadIn.CurrentTemp, 1);
+                CurrentTempString = $"{CurrentTemp}\u00B0C";
             }
-            else
+            if (1 == payloadIn.DataType)    // if data in is a selected temperature
             {
-                SelectedTemp = (int)payloadIn.Temp;
+                SelectedTemp = (int)payloadIn.CurrentTemp;
+            }
+            if (2 == payloadIn.DataType)    // if data in is the temperature history from the last 30 min
+            {
+                foreach (double temp in payloadIn.TempHistory)
+                {
+
+                }
             }
             return Task.CompletedTask;
         }

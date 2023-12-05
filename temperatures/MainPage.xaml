@@ -14,7 +14,7 @@
             <HorizontalStackLayout>
                 <Label Text="Current Temperature: "
                        Margin="10"/>
-                <Label Text="{Binding CurrentTemp}"
+                <Label Text="{Binding CurrentTempString}"
                        Margin="
                        10"/>
             </HorizontalStackLayout>
@@ -42,6 +42,8 @@
                      />
             <Button Text="Set Temp"
                     Command="{Binding SetTempButton_PressedCommand}"/>
+            <lvc:CartesianChart Series="{Binding TemperatureData}"
+                                Title="{Binding Title}"/>
         </VerticalStackLayout>
     </ScrollView>
 
