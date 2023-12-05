@@ -22,8 +22,9 @@ Stepper-related code had assistance from the "MotorKnob" example from the Steppe
 #define STEP_PIN1 1
 #define STEP_PIN2 2
 #define STEP_PIN3 1
-#define STEPS_PER_REV 2038
-#define STEPS_PER_DEGREE 10  // the number of stepper motor steps per degree on the thermostat
+#define STEPS_PER_REV 1024
+#define STEPS_PER_DEGREE 100  // the number of stepper motor steps per degree on the thermostat
+#define RPM 10                 // the motor speed in rpm (max motor speed is 14.6rpm)
 //DHT defines
 #define DHT_PIN 4
 #define DHTTYPE DHT11
@@ -61,7 +62,7 @@ void Callback(char* topic, byte* payload, unsigned int length);
 void Reconnect();
 
 // reads a temp from the dht sensor and sends it to the mqtt broker
-void SendTemp();
+void SendTemp(int dataType);
 
 // set the thermostat to setTemp using the stepper motor
 void SetThermostat(int setTemp);
@@ -86,9 +87,10 @@ void setup() {
   client.setServer(BROKER, 1883);   // sets up mqtt client on the broker at port 1883
   client.setCallback(Callback);     // sets message recieved event handler
   client.subscribe(INTOPIC);       // subscribe to the mosi topic
-  stepper.setSpeed(5);             // set stepper motor speed to 30 rpm
+  stepper.setSpeed(RPM);             // set stepper motor speed to 30 rpm
   lastReading = millis();           // get current time
   selectedTemp = (int)dht.readTemperature(); // get the current thermostat setting as the actual current temperature
+  SendTemp(1);
 }
 
 // Main Loop
@@ -202,6 +204,7 @@ void SendTemp(int dataType)
 void SetThermostat(int setTemp)
 {
   stepper.step((setTemp - selectedTemp)*STEPS_PER_DEGREE);
+  selectedTemp = setTemp;
   return;
 }
 
