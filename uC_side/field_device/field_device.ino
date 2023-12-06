@@ -20,9 +20,9 @@ Stepper-related code had assistance from the "MotorKnob" example from the Steppe
 #define STEP_PIN0 0
 #define STEP_PIN1 1
 #define STEP_PIN2 2
-#define STEP_PIN3 1
-#define STEPS_PER_REV 1024
-#define STEPS_PER_DEGREE 100  // the number of stepper motor steps per degree on the thermostat
+#define STEP_PIN3 3
+#define STEPS_PER_REV 2048
+#define STEPS_PER_DEGREE 50  // the number of stepper motor steps per degree on the thermostat
 #define RPM 10                 // the motor speed in rpm (max motor speed is 14.6rpm)
 //DHT defines
 #define DHT_PIN 4
@@ -171,7 +171,7 @@ void Reconnect() {
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      Serial.println(" try again in 5 seconds");                
       // Wait 5 seconds before retrying
       delay(5000);
     }
@@ -189,10 +189,10 @@ void SendTemp(int dataType)
     }
   // read temp and round it
   double temp = dht.readTemperature();
-  temp *= 10;
+  temp = temp * 10;
   temp += 0.5;
   int itemp = (int)temp;
-  temp = itemp / 10.0;
+  temp = (double)itemp / 10.0;
   tempHistory[29] = temp;
 
   if (!dataType)        // if an air temperature is requested
