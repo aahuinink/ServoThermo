@@ -70,16 +70,15 @@ namespace temperatures.ViewModel
         public MainViewModel()
         {
             ConnectionStatus = "Connecting to broker...";
-            IMqttClient client = new MqttFactory().CreateMqttClient();          // create mqtt client
+            client = new MqttFactory().CreateMqttClient();          // create mqtt client
             _temperatureHistory = new ObservableCollection<ObservableValue>();  // create place to store temp history values
-            Series = new ObservableCollection<ISeries>                          // create observable collection of line series
+            Series = new ObservableCollection<ISeries>
+        {
+            new LineSeries<ObservableValue>
             {
-                new LineSeries<ObservableValue>
-                {
-                    Values = _temperatureHistory,        // array to store temperatures
-                    Fill = null
-                }
-            };
+                Values = _temperatureHistory
+            }
+        }; 
 
             Connect();
         }
@@ -160,19 +159,25 @@ namespace temperatures.ViewModel
 
             if (0 == payloadIn.DataType)    // if data reading is an air temperature
             {
-                CurrentTemp = Math.Round(payloadIn.CurrentTemp, 1);
+                CurrentTemp = payloadIn.CurrentTemp;
                 CurrentTempString = $"{CurrentTemp}\u00B0C";
+                if (_temperatureHistory.Count >= 30)
+                {
+                    _temperatureHistory.RemoveAt(0);
+                }
+                _temperatureHistory.Add(new ObservableValue(CurrentTemp));
             }
-            if (1 == payloadIn.DataType)    // if data in is a selected temperature
+            if (1 == payloadIn.DataType)    // if data in is a response to a query
             {
-                SelectedTemp = (int)payloadIn.CurrentTemp;
-            }
-            if (2 == payloadIn.DataType)    // if data in is the temperature history from the last 30 min
-            {
+                SelectedTemp = (int)payloadIn.CurrentTemp;      // update selected temp
+
                 foreach (double temp in payloadIn.TempHistory)
                 {
-
+                    _temperatureHistory.Add(new ObservableValue(temp));
                 }
+
+                CurrentTemp = Convert.ToDouble(_temperatureHistory.Last().Value);
+                CurrentTempString = $"{CurrentTemp}\u00B0C";
             }
             return Task.CompletedTask;
         }

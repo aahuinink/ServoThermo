@@ -5,7 +5,8 @@
              xmlns:viewmodel="clr-namespace:temperatures.ViewModel"
              x:DataType="viewmodel:MainViewModel"
              xmlns:local="clr-namespace:temperatures;assembly=temperatures"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui">
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:vms="clr-namespace:temperatures;assembly=temperatures">
     <ScrollView>
         <VerticalStackLayout
             Spacing="25"
@@ -42,8 +43,13 @@
                      />
             <Button Text="Set Temp"
                     Command="{Binding SetTempButton_PressedCommand}"/>
-            <lvc:CartesianChart Series="{Binding TemperatureData}"
-                                Title="{Binding Title}"/>
+            
+            <lvc:CartesianChart Series="{Binding Series}"
+                                Title="{Binding Title}"
+                                WidthRequest="500"
+                                HeightRequest="500">
+            </lvc:CartesianChart>
+            
         </VerticalStackLayout>
     </ScrollView>
 

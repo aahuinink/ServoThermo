@@ -15,7 +15,6 @@ Stepper-related code had assistance from the "MotorKnob" example from the Steppe
 #include <WiFi.h>
 
 
-
 // User defines
 // stepper defines
 #define STEP_PIN0 0
@@ -52,6 +51,7 @@ PubSubClient client(espClient);   // for mqtt
 // Global Variables
 int selectedTemp;   // the currently selected thermostat temperature
 long int lastReading;
+double tempHistory[30];
 
 //Function Prototypes
 
@@ -145,7 +145,7 @@ void Callback(char* topic, byte* payload, unsigned int length) {
   }
   // end of copied code
 
-  if(1 == doc["Query"])     // request for the selected temperature
+  if(1 == doc["Query"])     // request for the selected temperature and temperature history
   {
     SendTemp(1);
   }
@@ -180,24 +180,40 @@ void Reconnect() {
 
 void SendTemp(int dataType)
 {
-  DynamicJsonDocument doc(200);
+  DynamicJsonDocument doc(1024);
 
   doc["DataType"] = dataType;        // specify the temperature reading as air temp
-  
+  for (int i = 1; i < 30; i++)
+    {
+      tempHistory[i-1] = tempHistory[i];    // shift the list down
+    }
+  // read temp and round it
+  double temp = dht.readTemperature();
+  temp *= 10;
+  temp += 0.5;
+  int itemp = (int)temp;
+  temp = itemp / 10.0;
+  tempHistory[29] = temp;
+
   if (!dataType)        // if an air temperature is requested
   {
-    doc["Temp"] = dht.readTemperature();
+    doc["CurrentTemp"] = temp;
   }
   else 
   {
-    doc["Temp"] = selectedTemp;
+    doc["CurrentTemp"] = (int)selectedTemp;
+    for(int i = 0; i < 30; i++)
+    {
+      doc["TempHistory"][i] = tempHistory[i];
+    }
   }
 
   // serialize the payload
-  char payload[200];
+  char payload[1024];
   serializeJson(doc, payload);
 
   client.publish(OUTTOPIC, payload);
+  lastReading = millis();
   return;
 }
 
