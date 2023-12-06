@@ -7,50 +7,56 @@
              xmlns:local="clr-namespace:temperatures;assembly=temperatures"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:vms="clr-namespace:temperatures;assembly=temperatures">
-    <ScrollView>
-        <VerticalStackLayout
-            Spacing="25"
-            Padding="30,0"
-            VerticalOptions="Center">
-            <HorizontalStackLayout>
-                <Label Text="Current Temperature: "
-                       Margin="10"/>
-                <Label Text="{Binding CurrentTempString}"
-                       Margin="
-                       10"/>
-            </HorizontalStackLayout>
-            <HorizontalStackLayout>
-                <Label Text="Last Reading: "
-                       Margin="10"/>
-                <Label Text="{Binding LastReading}"
-                       Margin="10"/>
-            </HorizontalStackLayout>
-            <HorizontalStackLayout>
-                <Label Text="Connection Status: "
-                       Margin="10"/>
-                <Label Text="{Binding ConnectionStatus}"
-                       Margin="10"/>
-            </HorizontalStackLayout>
-            <HorizontalStackLayout>
-                <Label Text="Selected Temperature: "
-                       Margin="10"/>
-                <Label Text="{Binding SelectedTemp}"
-                       Margin="10"/>
-            </HorizontalStackLayout>
-            <Slider Maximum="30"
-                    Minimum="15"
-                    Value="{Binding SelectedTemp}"
-                     />
-            <Button Text="Set Temp"
-                    Command="{Binding SetTempButton_PressedCommand}"/>
-            
-            <lvc:CartesianChart Series="{Binding Series}"
-                                Title="{Binding Title}"
-                                WidthRequest="500"
-                                HeightRequest="500">
-            </lvc:CartesianChart>
-            
-        </VerticalStackLayout>
-    </ScrollView>
 
+    <Grid ColumnDefinitions="0.3*,0.7*"
+          RowDefinitions="0.7*,0.3*"
+          BackgroundColor="Gray">
+        <VerticalStackLayout Grid.Row="0"
+                             Grid.Column="0"
+                             Padding="10">
+            <Label Text="Current Temperature "
+                   Margin="10"
+                       FontSize="Body"
+                       FontAttributes="Bold"/>
+            <Label Text="{Binding CurrentTempString}"
+                   Margin="10"/>
+            <Label Text="Last Reading"
+                    Margin="10"
+                       FontSize="Body"
+                       FontAttributes="Bold"/>
+            <Label Text="{Binding LastReading}"
+                    Margin="10"/>
+            <Label Text="Connection Status"
+                     Margin="10"
+                        FontSize="Body"
+                        FontAttributes="Bold"/>
+            <Label Text="{Binding ConnectionStatus}"
+                   Margin="10"/>
+            <Label Text="Selected Temperature"
+            Margin="10"
+               FontSize="Body"
+               FontAttributes="Bold"/>
+            <Label Text="{Binding SelectedTempString}"
+            Margin="10"/>
+            <Slider Maximum="30"
+Minimum="15"
+Value="{Binding SelectedTemp}"
+    Grid.Row="3"
+    Grid.ColumnSpan="2"
+    Grid.Column="0"
+    />
+            <Button Text="Set Temp"
+Command="{Binding SetTempButton_PressedCommand}"
+    Grid.Row="3"
+    Grid.Column="0"
+    Grid.ColumnSpan="2"/>
+        </VerticalStackLayout>
+
+
+        <lvc:CartesianChart Series="{Binding Series}"
+                            Title="{Binding Title}"
+                            Grid.Column="1"
+                            >
+        </lvc:CartesianChart>
+    </Grid>
 </ContentPage>

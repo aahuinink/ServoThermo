@@ -53,6 +53,9 @@ namespace temperatures.ViewModel
         public ObservableCollection<ISeries> Series { get; set; }
 
         [ObservableProperty]
+        public int selectedTemp;
+
+        [ObservableProperty]
         public string connectionStatus;
 
         [ObservableProperty]
@@ -62,7 +65,7 @@ namespace temperatures.ViewModel
         public string lastReading;
 
         [ObservableProperty]
-        public int selectedTemp;
+        public string selectedTempString;
 
         [ObservableProperty]
         public string setTempLabel;
@@ -169,7 +172,8 @@ namespace temperatures.ViewModel
             }
             if (1 == payloadIn.DataType)    // if data in is a response to a query
             {
-                SelectedTemp = (int)payloadIn.CurrentTemp;      // update selected temp
+                selectedTemp = (int)payloadIn.CurrentTemp;
+                SelectedTempString = $"{selectedTemp}\u00B0C";      // update selected temp
 
                 foreach (double temp in payloadIn.TempHistory)
                 {
@@ -179,6 +183,7 @@ namespace temperatures.ViewModel
                 CurrentTemp = Convert.ToDouble(_temperatureHistory.Last().Value);
                 CurrentTempString = $"{CurrentTemp}\u00B0C";
             }
+            LastReading = DateTime.Now.ToString();
             return Task.CompletedTask;
         }
 
@@ -190,8 +195,9 @@ namespace temperatures.ViewModel
         private async Task SetTempButton_Pressed()
         {
             PayloadOut payloadOut = new PayloadOut();
-            payloadOut.SetTemp = SelectedTemp;
+            payloadOut.SetTemp = selectedTemp;
             payloadOut.Query = 0;
+            SelectedTempString = $"{selectedTemp}\u00B0C";
             // Thanks to https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/how-to?pivots=dotnet-6-0 for assistance with JsonSerializer
             string payloadJson = JsonSerializer.Serialize(payloadOut);
             var message = new MqttApplicationMessageBuilder()
