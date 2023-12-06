@@ -9,7 +9,7 @@
              xmlns:vms="clr-namespace:temperatures;assembly=temperatures">
 
     <Grid ColumnDefinitions="0.3*,0.7*"
-          RowDefinitions="0.7*,0.3*"
+          RowDefinitions="0.7*,0.1*,0.2*"
           BackgroundColor="Gray">
         <VerticalStackLayout Grid.Row="0"
                              Grid.Column="0"
@@ -50,17 +50,15 @@ Command="{Binding SetTempButton_PressedCommand}"
     Grid.Row="3"
     Grid.Column="0"
     Grid.ColumnSpan="2"/>
-        </VerticalStackLayout>
-
-        <VerticalStackLayout>
-            <lvc:CartesianChart Series="{Binding Series}"
-                    Title="{Binding Title}"
-                    Grid.Column="1"
-                    >
-            </lvc:CartesianChart>
             <Button Text="Clear Data"
-                    Command="{Binding ClearDataCommand}"/>
+            Command="{Binding ClearDataCommand}"
+                    Margin="0,20,0,0"/>
         </VerticalStackLayout>
+        <lvc:CartesianChart Series="{Binding Series}"
+                    Title="{Binding Title}"
+                    Grid.Column="1">
+            </lvc:CartesianChart>
         
+
     </Grid>
 </ContentPage>
