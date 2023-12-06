@@ -94,7 +94,7 @@ namespace temperatures.ViewModel
                 Text = "Temperature History",
                 TextSize = 25,
                 Padding = new LiveChartsCore.Drawing.Padding(15),
-                Paint = new SolidColorPaint(SKColors.Blue)
+                Paint = new SolidColorPaint(SKColors.White)
             };
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace temperatures.ViewModel
             {
                 CurrentTemp = payloadIn.CurrentTemp;
                 CurrentTempString = $"{CurrentTemp}\u00B0C";
-                if (_temperatureHistory.Count >= 30)
+                while (_temperatureHistory.Count > 600) // if greater than 5 hours long (2 readings/min x 300  min)
                 {
                     _temperatureHistory.RemoveAt(0);
                 }
@@ -172,8 +172,8 @@ namespace temperatures.ViewModel
             }
             if (1 == payloadIn.DataType)    // if data in is a response to a query
             {
-                selectedTemp = (int)payloadIn.CurrentTemp;
-                SelectedTempString = $"{selectedTemp}\u00B0C";      // update selected temp
+                SelectedTemp = (int)payloadIn.CurrentTemp;
+                SelectedTempString = $"{SelectedTemp}\u00B0C";      // update selected temp
 
                 foreach (double temp in payloadIn.TempHistory)
                 {
