@@ -42,7 +42,7 @@ namespace temperatures.ViewModel
     }
     public partial class MainViewModel : ObservableObject
     {
-        
+
 
         public double CurrentTemp { get; set; }
 
@@ -81,7 +81,7 @@ namespace temperatures.ViewModel
             {
                 Values = _temperatureHistory
             }
-        }; 
+        };
 
             Connect();
         }
@@ -206,7 +206,7 @@ namespace temperatures.ViewModel
                 .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
                 .Build();
             await client.PublishAsync(message);
-        } 
+        }
         /// <summary>
         /// requests the current temp the uC has the thermostate set to
         /// </summary>
@@ -224,5 +224,14 @@ namespace temperatures.ViewModel
                 .Build();
             await client.PublishAsync(message);
         }
+
+        [RelayCommand]
+        private void ClearData()
+        {
+            _temperatureHistory.Clear();
+            return;
+        }
+    
     }
+
 }

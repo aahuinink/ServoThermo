@@ -52,11 +52,15 @@ Command="{Binding SetTempButton_PressedCommand}"
     Grid.ColumnSpan="2"/>
         </VerticalStackLayout>
 
-
-        <lvc:CartesianChart Series="{Binding Series}"
-                            Title="{Binding Title}"
-                            Grid.Column="1"
-                            >
-        </lvc:CartesianChart>
+        <VerticalStackLayout>
+            <lvc:CartesianChart Series="{Binding Series}"
+                    Title="{Binding Title}"
+                    Grid.Column="1"
+                    >
+            </lvc:CartesianChart>
+            <Button Text="Clear Data"
+                    Command="{Binding ClearDataCommand}"/>
+        </VerticalStackLayout>
+        
     </Grid>
 </ContentPage>
