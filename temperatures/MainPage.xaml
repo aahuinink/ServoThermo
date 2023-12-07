@@ -36,8 +36,12 @@
             Margin="10"
                FontSize="Body"
                FontAttributes="Bold"/>
-            <Label Text="{Binding SelectedTempString}"
-            Margin="10"/>
+            <HorizontalStackLayout Padding="10">
+                <Label Text="{Binding SelectedTemp}"
+                       Margin="10"/>
+                <Label Text="{Binding SelectedTempString}"/>
+            </HorizontalStackLayout>
+            
             <Slider Maximum="30"
 Minimum="15"
 Value="{Binding SelectedTemp}"
@@ -56,7 +60,8 @@ Command="{Binding SetTempButton_PressedCommand}"
         </VerticalStackLayout>
         <lvc:CartesianChart Series="{Binding Series}"
                     Title="{Binding Title}"
-                    Grid.Column="1">
+                    Grid.Column="1"
+                            XAxes="{Binding XAxes}">
             </lvc:CartesianChart>
         
 

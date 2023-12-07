@@ -28,8 +28,8 @@ Stepper-related code had assistance from the "MotorKnob" example from the Steppe
 #define DHT_PIN 4
 #define DHTTYPE DHT11
 // WiFi defines
-#define SSID "All My Homies Hate Rogers"
-#define PASSWORD "fuckRogers!123"
+#define SSID "IoT-Security"
+#define PASSWORD "B@kery204!"
 // MQTT defines
 #define BROKER "broker.emqx.io"
 #define OUTTOPIC "ecet230/AaronH/MISO"

@@ -48,7 +48,7 @@ namespace temperatures.ViewModel
 
         IMqttClient client;
 
-        private ObservableCollection<ObservableValue> _temperatureHistory;
+        private ObservableCollection<double> _temperatureHistory;
 
         public ObservableCollection<ISeries> Series { get; set; }
 
@@ -65,24 +65,33 @@ namespace temperatures.ViewModel
         public string lastReading;
 
         [ObservableProperty]
-        public string selectedTempString;
+        public string selectedTempString = $"\u00B0C";
 
-        [ObservableProperty]
-        public string setTempLabel;
+        public ObservableCollection<Axis> XAxes { get; set; }
+
+        public ObservableCollection<string> axisLabels;
 
         public MainViewModel()
         {
             ConnectionStatus = "Connecting to broker...";
             client = new MqttFactory().CreateMqttClient();          // create mqtt client
-            _temperatureHistory = new ObservableCollection<ObservableValue>();  // create place to store temp history values
+            _temperatureHistory = new ObservableCollection<double>();  // create place to store temp history values
             Series = new ObservableCollection<ISeries>
         {
-            new LineSeries<ObservableValue>
+            new LineSeries<double>
             {
                 Values = _temperatureHistory
             }
         };
-
+            axisLabels = new ObservableCollection<string>();
+            XAxes = new ObservableCollection<Axis>
+            {
+                new Axis
+                {
+                    Name = "Time",
+                    Labels = axisLabels
+                }
+            };
             Connect();
         }
         /// <summary>
@@ -163,27 +172,29 @@ namespace temperatures.ViewModel
             if (0 == payloadIn.DataType)    // if data reading is an air temperature
             {
                 CurrentTemp = payloadIn.CurrentTemp;
-                CurrentTempString = $"{CurrentTemp}\u00B0C";
                 while (_temperatureHistory.Count > 600) // if greater than 5 hours long (2 readings/min x 300  min)
                 {
                     _temperatureHistory.RemoveAt(0);
                 }
-                _temperatureHistory.Add(new ObservableValue(CurrentTemp));
+                _temperatureHistory.Add(CurrentTemp);
             }
             if (1 == payloadIn.DataType)    // if data in is a response to a query
             {
                 SelectedTemp = (int)payloadIn.CurrentTemp;
-                SelectedTempString = $"{SelectedTemp}\u00B0C";      // update selected temp
 
+                int itemCount = payloadIn.TempHistory.Length;
                 foreach (double temp in payloadIn.TempHistory)
                 {
-                    _temperatureHistory.Add(new ObservableValue(temp));
+                    itemCount--;
+                    axisLabels.Add(DateTime.Now.AddSeconds(-30*itemCount).ToString("HH:mm"));
+                    _temperatureHistory.Add(temp);
                 }
 
-                CurrentTemp = Convert.ToDouble(_temperatureHistory.Last().Value);
-                CurrentTempString = $"{CurrentTemp}\u00B0C";
+                CurrentTemp = _temperatureHistory.Last();
+                
             }
-            LastReading = DateTime.Now.ToString();
+            CurrentTempString = $"{CurrentTemp}\u00B0C";
+            LastReading = DateTime.Now.ToString("HH:mm");
             return Task.CompletedTask;
         }
 
@@ -195,9 +206,8 @@ namespace temperatures.ViewModel
         private async Task SetTempButton_Pressed()
         {
             PayloadOut payloadOut = new PayloadOut();
-            payloadOut.SetTemp = selectedTemp;
+            payloadOut.SetTemp = SelectedTemp;
             payloadOut.Query = 0;
-            SelectedTempString = $"{selectedTemp}\u00B0C";
             // Thanks to https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/how-to?pivots=dotnet-6-0 for assistance with JsonSerializer
             string payloadJson = JsonSerializer.Serialize(payloadOut);
             var message = new MqttApplicationMessageBuilder()
