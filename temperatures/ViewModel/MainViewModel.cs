@@ -37,38 +37,72 @@ namespace temperatures.ViewModel
         /// 1 - current thermostat temp
         /// </summary>
         public int Query { get; set; }
+        /// <summary>
+        /// The temperature to set the thermostat to
+        /// </summary>
         public int SetTemp { get; set; }
         public PayloadOut() { }
     }
     public partial class MainViewModel : ObservableObject
     {
-
-
+        /// <summary>
+        /// The current temperature
+        /// </summary>
         public double CurrentTemp { get; set; }
 
+        /// <summary>
+        /// MQTT client
+        /// </summary>
         IMqttClient client;
 
+        /// <summary>
+        /// The temperature history
+        /// </summary>
         private ObservableCollection<double> _temperatureHistory;
 
+        /// <summary>
+        /// Line series data
+        /// </summary>
         public ObservableCollection<ISeries> Series { get; set; }
 
+        /// <summary>
+        /// The selected thermostat temperature
+        /// </summary>
         [ObservableProperty]
         public int selectedTemp;
 
+        /// <summary>
+        /// The connections status
+        /// </summary>
         [ObservableProperty]
         public string connectionStatus;
 
+        /// <summary>
+        /// The current temperature as a string for data binding
+        /// </summary>
         [ObservableProperty]
         public string currentTempString;
 
+        /// <summary>
+        /// The time of the last reading
+        /// </summary>
         [ObservableProperty]
         public string lastReading;
 
+        /// <summary>
+        /// The current selected thermostat temperature
+        /// </summary>
         [ObservableProperty]
         public string selectedTempString = $"\u00B0C";
 
+        /// <summary>
+        /// X axes object to hold axis data
+        /// </summary>
         public ObservableCollection<Axis> XAxes { get; set; }
 
+        /// <summary>
+        /// labels for chart axes
+        /// </summary>
         public ObservableCollection<string> axisLabels;
 
         public MainViewModel()
@@ -76,13 +110,14 @@ namespace temperatures.ViewModel
             ConnectionStatus = "Connecting to broker...";
             client = new MqttFactory().CreateMqttClient();          // create mqtt client
             _temperatureHistory = new ObservableCollection<double>();  // create place to store temp history values
-            Series = new ObservableCollection<ISeries>
+            Series = new ObservableCollection<ISeries>                  // create data series to display temp history with
         {
             new LineSeries<double>
             {
                 Values = _temperatureHistory
             }
         };
+            // create axis with labels
             axisLabels = new ObservableCollection<string>();
             XAxes = new ObservableCollection<Axis>
             {
@@ -92,7 +127,7 @@ namespace temperatures.ViewModel
                     Labels = axisLabels
                 }
             };
-            Connect();
+            Connect();  // connect to the MQTT broker
         }
         /// <summary>
         /// Title for the Line Chart
@@ -126,11 +161,14 @@ namespace temperatures.ViewModel
                                                 .Build();
                 client.ConnectedAsync += Client_ConnectedAsync;
                 client.DisconnectedAsync += Client_DisconnectedAsync;
+                // connect
                 await client.ConnectAsync(connectionOptions);
+                // subscribe
                 var subscribeOptions = new MqttClientSubscribeOptionsBuilder()
                                                 .WithTopicFilter("ecet230/AaronH/MISO")
                                                 .Build();
                 await client.SubscribeAsync(subscribeOptions);
+                // message recieved handler
                 client.ApplicationMessageReceivedAsync += Client_ApplicationMessageReceivedAsync;
             }
             await ReqCurrentSetTemp();
@@ -235,6 +273,9 @@ namespace temperatures.ViewModel
             await client.PublishAsync(message);
         }
 
+        /// <summary>
+        /// Clears temperature history data and chart
+        /// </summary>
         [RelayCommand]
         private void ClearData()
         {
