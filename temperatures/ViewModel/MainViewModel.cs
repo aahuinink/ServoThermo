@@ -361,6 +361,10 @@ namespace temperatures.ViewModel
                 .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
                 .Build();
             await client.PublishAsync(message);
+
+            // start acknowledgement timer
+            lastTX = DateTime.Now;
+            TXtimer.Enabled = true;
         }
 
 
