@@ -127,13 +127,21 @@ namespace temperatures.ViewModel
         public ObservableCollection<string> axisLabels;
 
         // DEBUGGING STUFF
-
+        /// <summary>
+        /// The number of lost packets sent by the peripheral device
+        /// </summary>
         [ObservableProperty]
         public int lostRXPackets = 0;
 
+        /// <summary>
+        /// The number of lost packets sent from the dashboard
+        /// </summary>
         [ObservableProperty]
         public int lostTXPackets = 0;
 
+        /// <summary>
+        /// The number of packets with checksum errors
+        /// </summary>
         [ObservableProperty]
         public int checksumErrors = 0;
 
@@ -149,10 +157,11 @@ namespace temperatures.ViewModel
             TXtimer.Enabled = false;
             TXtimer.Elapsed += TXtimer_Elapsed;
 
-            // 
-            lastRX = DateTime.Now;
+            // Connect to MQTT broker
             ConnectionStatus = "Connecting to broker...";
             client = new MqttFactory().CreateMqttClient();          // create mqtt client
+
+            // graph stuffs
             _temperatureHistory = new ObservableCollection<double>();  // create place to store temp history values
             Series = new ObservableCollection<ISeries>                  // create data series to display temp history with
         {
@@ -344,9 +353,12 @@ namespace temperatures.ViewModel
         [RelayCommand]
         private async Task SetTempButton_Pressed()
         {
+            // create payload object
             PayloadOut payloadOut = new PayloadOut();
             payloadOut.SetTemp = SelectedTemp;
             payloadOut.Query = 0;
+
+            // JSON stuffs
             // Thanks to https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/how-to?pivots=dotnet-6-0 for assistance with JsonSerializer
             string payloadJson = JsonSerializer.Serialize(payloadOut);
 
@@ -396,6 +408,11 @@ namespace temperatures.ViewModel
             return;
         }
 
+        /// <summary>
+        /// Calculates the checksum and returns it.
+        /// </summary>
+        /// <param name="payload">The string to calculate the checksum from</param>
+        /// <returns></returns>
         private int CalculateChecksum(string payload)
         {
             int chx = 0;
