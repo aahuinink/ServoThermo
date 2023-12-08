@@ -8,7 +8,7 @@
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:vms="clr-namespace:temperatures;assembly=temperatures">
 
-    <Grid ColumnDefinitions="0.3*,0.7*"
+    <Grid ColumnDefinitions="0.4*,0.6*"
           RowDefinitions="0.7*,0.1*,0.2*"
           BackgroundColor="Gray">
         <VerticalStackLayout Grid.Row="0"
@@ -38,7 +38,7 @@
                FontAttributes="Bold"/>
             <HorizontalStackLayout Padding="10">
                 <Label Text="{Binding SelectedTemp}"
-                       Margin="10"/>
+                       Margin="5,0,0,0"/>
                 <Label Text="{Binding SelectedTempString}"/>
             </HorizontalStackLayout>
             
@@ -58,7 +58,7 @@ Command="{Binding SetTempButton_PressedCommand}"
             Command="{Binding ClearDataCommand}"
                     Margin="0,20,0,0"/>
             <Button Text="{Binding DebugHide_Text}"
-                    Command=""
+                    Command="{Binding ToggleDebugCommand}"/>
         </VerticalStackLayout>
         <lvc:CartesianChart Series="{Binding Series}"
                     Title="{Binding Title}"
@@ -67,8 +67,25 @@ Command="{Binding SetTempButton_PressedCommand}"
             </lvc:CartesianChart>
 
         <HorizontalStackLayout Grid.Row="2"
-                               Grid.ColumnSpan="2">
-            
+                               Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               IsVisible="{Binding DebuggingVisible}"
+                               >
+            <VerticalStackLayout Margin="20">
+                <Label Text="Lost Received Packets"
+                       FontAttributes="Bold"/>
+                <Label Text="{Binding LostRXPackets}"/>
+            </VerticalStackLayout>
+            <VerticalStackLayout Margin="20">
+                <Label Text="Lost Sent Packets"
+           FontAttributes="Bold"/>
+                <Label Text="{Binding LostTXPackets}"/>
+            </VerticalStackLayout>
+            <VerticalStackLayout Margin="20">
+                <Label Text="Checksum Errors"
+           FontAttributes="Bold"/>
+                <Label Text="{Binding ChecksumErrors}"/>
+            </VerticalStackLayout>
         </HorizontalStackLayout>
 
     </Grid>
