@@ -247,7 +247,7 @@ namespace temperatures.ViewModel
                     return Task.CompletedTask;
                 }
             }
-            catch (Exception ex)
+            catch 
             {
                 ChecksumErrors++;
                 return Task.CompletedTask;
@@ -285,6 +285,8 @@ namespace temperatures.ViewModel
             return Task.CompletedTask;
         }
 
+
+
         /// <summary>
         /// sends a temp for the uC to set the thermostat to
         /// </summary>
@@ -297,6 +299,12 @@ namespace temperatures.ViewModel
             payloadOut.Query = 0;
             // Thanks to https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/how-to?pivots=dotnet-6-0 for assistance with JsonSerializer
             string payloadJson = JsonSerializer.Serialize(payloadOut);
+
+            // calculate checksum
+            int chx = CalculateChecksum(payloadJson);
+            payloadJson = chx.ToString() + payloadJson;     // add checksum to packet
+
+            // build message and publish
             var message = new MqttApplicationMessageBuilder()
                 .WithTopic("ecet230/AaronH/MOSI")
                 .WithPayload(payloadJson)
@@ -304,6 +312,8 @@ namespace temperatures.ViewModel
                 .Build();
             await client.PublishAsync(message);
         }
+
+
         /// <summary>
         /// requests the current temp the uC has the thermostate set to
         /// </summary>
@@ -341,7 +351,6 @@ namespace temperatures.ViewModel
             }
             return chx % 1000;
         }
-    
     }
 
 }
