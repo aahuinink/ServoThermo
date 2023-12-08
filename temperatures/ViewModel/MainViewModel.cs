@@ -10,6 +10,7 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using System.Collections.ObjectModel;
 using LiveChartsCore.Defaults;
+using System.Timers;
 
 namespace temperatures.ViewModel
 {
@@ -45,6 +46,12 @@ namespace temperatures.ViewModel
     }
     public partial class MainViewModel : ObservableObject
     {
+        /// <summary>
+        /// Timer to make sure that packets are coming every 30 seconds
+        /// </summary>
+        System.Timers.Timer timer = new System.Timers.Timer();
+
+        DateTime lastRX;
         /// <summary>
         /// The current temperature
         /// </summary>
@@ -105,8 +112,23 @@ namespace temperatures.ViewModel
         /// </summary>
         public ObservableCollection<string> axisLabels;
 
+        // DEBUGGING STUFF
+
+        [ObservableProperty]
+        public int lostRXPackets = 0;
+
+        [ObservableProperty]
+        public int lostTXPackets = 0;
+
+        [ObservableProperty]
+        public int checksumErrors = 0;
+
         public MainViewModel()
         {
+            timer.Interval = 30000;
+            timer.Enabled = true;
+            timer.Elapsed += Timer_Elapsed;
+            lastRX = DateTime.Now;
             ConnectionStatus = "Connecting to broker...";
             client = new MqttFactory().CreateMqttClient();          // create mqtt client
             _temperatureHistory = new ObservableCollection<double>();  // create place to store temp history values
@@ -129,6 +151,12 @@ namespace temperatures.ViewModel
             };
             Connect();  // connect to the MQTT broker
         }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Title for the Line Chart
         /// </summary>
@@ -204,8 +232,29 @@ namespace temperatures.ViewModel
         /// <returns></returns>
         private Task Client_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
         {
-            string rec = arg.ApplicationMessage.ConvertPayloadToString();
-            PayloadIn payloadIn = JsonSerializer.Deserialize<PayloadIn>(rec);
+            lastRX = DateTime.Now;  // save new RX time
+            string rec = arg.ApplicationMessage.ConvertPayloadToString();   // get payload
+
+            // check checksum
+            try
+            {
+                int rxChx = Convert.ToInt32(rec.Substring(0, 3));
+                rec = rec.Substring(3);
+                int chx = CalculateChecksum(rec);
+                if (rxChx != chx)
+                {
+                    ChecksumErrors++;
+                    return Task.CompletedTask;
+                }
+            }
+            catch (Exception ex)
+            {
+                ChecksumErrors++;
+                return Task.CompletedTask;
+            }
+
+            // if checksum good
+            PayloadIn payloadIn = JsonSerializer.Deserialize<PayloadIn>(rec); // deserialize packet
 
             if (0 == payloadIn.DataType)    // if data reading is an air temperature
             {
@@ -281,6 +330,16 @@ namespace temperatures.ViewModel
         {
             _temperatureHistory.Clear();
             return;
+        }
+
+        private int CalculateChecksum(string payload)
+        {
+            int chx = 0;
+            for (int i = 0; i < payload.Length; i++)
+            {
+                chx += (byte)payload[i];
+            }
+            return chx % 1000;
         }
     
     }
