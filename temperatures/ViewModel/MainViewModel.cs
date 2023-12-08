@@ -49,7 +49,12 @@ namespace temperatures.ViewModel
         /// <summary>
         /// Timer to make sure that packets are coming every 30 seconds
         /// </summary>
-        System.Timers.Timer timer = new System.Timers.Timer();
+        System.Timers.Timer RXtimer = new System.Timers.Timer();
+
+        /// <summary>
+        /// Timer to make sure that packets are acknowledged within 10 seconds
+        /// </summary>
+        System.Timers.Timer TXtimer = new System.Timers.Timer();
 
         DateTime lastRX;
         /// <summary>
@@ -125,9 +130,12 @@ namespace temperatures.ViewModel
 
         public MainViewModel()
         {
-            timer.Interval = 30000;
-            timer.Enabled = true;
-            timer.Elapsed += Timer_Elapsed;
+            // RX timer setup
+            RXtimer.Interval = 30000;
+            RXtimer.Enabled = true;
+            RXtimer.Elapsed += RXTimer_Elapsed;
+
+            // TX timer setup
             lastRX = DateTime.Now;
             ConnectionStatus = "Connecting to broker...";
             client = new MqttFactory().CreateMqttClient();          // create mqtt client
@@ -152,9 +160,12 @@ namespace temperatures.ViewModel
             Connect();  // connect to the MQTT broker
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void RXTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            throw new NotImplementedException();
+            if((DateTime.Now - lastRX) > TimeSpan.FromSeconds(30))  // if its been more than 30s since the last packet has been recieved
+            {
+                LostRXPackets++;        // increased lost Recieved packet count
+            }
         }
 
         /// <summary>
