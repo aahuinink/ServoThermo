@@ -321,6 +321,7 @@ namespace temperatures.ViewModel
                         _temperatureHistory.RemoveAt(0);    // remove old readings
                     }
                     _temperatureHistory.Add(CurrentTemp);  // add the new reading
+                    axisLabels.Add(DateTime.Now.ToString("HH:mm"));
                     break;
 
                 // if data in is a response to a query for temperature history data
@@ -422,6 +423,7 @@ namespace temperatures.ViewModel
         private void ClearData()
         {
             _temperatureHistory.Clear();
+            axisLabels.Clear();
             return;
         }
 
