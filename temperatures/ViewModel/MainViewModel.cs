@@ -158,14 +158,14 @@ namespace temperatures.ViewModel
         public string debugHide_Text = "Show Debugging";
 
         public MainViewModel()
-        {
+        { 
             // RX timer setup
             RXtimer.Interval = 30000;
             RXtimer.Enabled = true;
             RXtimer.Elapsed += RXTimer_Elapsed;
 
             // TX timer setup
-            TXtimer.Interval = 10000;
+            TXtimer.Interval = 1500;
             TXtimer.Enabled = false;
             TXtimer.Elapsed += TXtimer_Elapsed;
 
@@ -197,7 +197,8 @@ namespace temperatures.ViewModel
 
         private void TXtimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            throw new NotImplementedException();
+            LostTXPackets++;
+            TXtimer.Enabled = false;
         }
 
         private void RXTimer_Elapsed(object sender, ElapsedEventArgs e)
