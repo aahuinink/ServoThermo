@@ -59,7 +59,7 @@ namespace temperatures.ViewModel
         /// <summary>
         /// The last time a temperature reading was recieved
         /// </summary>
-        DateTime lastRX;
+        private DateTime lastRX;
 
         /// <summary>
         /// The last time a packet was transmitted
@@ -285,7 +285,8 @@ namespace temperatures.ViewModel
         private Task Client_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
         {
             string rec = arg.ApplicationMessage.ConvertPayloadToString();   // get payload
-
+            rec = rec.Split('}')[0];
+            rec += "}";
             // check checksum
             try
             {
@@ -294,6 +295,7 @@ namespace temperatures.ViewModel
                 int chx = CalculateChecksum(rec);
                 if (rxChx != chx)
                 {
+                    lastRX = DateTime.Now;
                     ChecksumErrors++;
                     return Task.CompletedTask;
                 }
@@ -403,6 +405,8 @@ namespace temperatures.ViewModel
             payloadJson.SetTemp = 0;
             payloadJson.Query = 1;
             string payload = JsonSerializer.Serialize(payloadJson);
+            int chx = CalculateChecksum(payload);
+            payload = chx.ToString() + payload;
             var message = new MqttApplicationMessageBuilder()
                 .WithTopic("ecet230/AaronH/MOSI")
                 .WithPayload(payload)
@@ -429,11 +433,15 @@ namespace temperatures.ViewModel
         private int CalculateChecksum(string payload)
         {
             int chx = 0;
-            for (int i = 0; i < payload.Length; i++)
+            int index = 0;
+            while (payload[index] != '}')
             {
-                chx += (byte)payload[i];
+                chx += (byte)payload[index];
+                index++;
             }
-            return chx % 1000;
+
+            chx += payload[index];
+            return chx % 1000 ;
         }
 
         [RelayCommand]

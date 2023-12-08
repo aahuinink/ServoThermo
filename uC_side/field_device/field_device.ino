@@ -28,8 +28,8 @@ Stepper-related code had assistance from the "MotorKnob" example from the Steppe
 #define DHT_PIN 4
 #define DHTTYPE DHT11
 // WiFi defines
-#define SSID "IoT-Security"
-#define PASSWORD "B@kery204!"
+#define SSID "All My Homies Hate Rogers"
+#define PASSWORD "fuckRogers!123"
 // MQTT defines
 #define BROKER "broker.emqx.io"
 #define OUTTOPIC "ecet230/AaronH/MISO"
@@ -132,6 +132,33 @@ void Callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
+  // calculate and check checksum
+  int rxChx = 100*(payload[0] - '0') + 10*(payload[1] - '0') + (payload[2] - '0');
+
+  int chx = 0;
+  int i = 3;
+
+  
+
+  while (payload[i] != '}')
+  {
+    chx += payload[i];
+    i++;
+  }
+
+  chx += payload[i];
+
+  chx = chx % 1000;
+
+  Serial.printf("REC: %i, CALC: %i", rxChx, chx);
+
+  if (rxChx != chx)
+  {
+    client.publish(OUTTOPIC, "221{\"DataType\":3}");    // acknowledge packet but alert of bad checksum
+    return;
+  }
+
+  payload = &payload[3];
   // get json object
   DynamicJsonDocument doc(200); // added by me
 
@@ -154,6 +181,7 @@ void Callback(char* topic, byte* payload, unsigned int length) {
     SetThermostat(doc["SetTemp"]); // use the stepper motor to set the thermostat temperature
   }
 
+  client.publish(OUTTOPIC, "220{\"DataType\":2}");
 }
 
 void Reconnect() {
@@ -212,7 +240,27 @@ void SendTemp(int dataType)
   char payload[1024];
   serializeJson(doc, payload);
 
-  client.publish(OUTTOPIC, payload);
+  // calculate checksum
+  int index = 0;
+  int chx = 0;
+  char outString[1024];
+
+  while (payload[index-1] != '}')
+  {
+    chx += payload[index];
+    outString[index+3] = payload[index];
+    index++;
+  }
+
+  char chxString[1030] = "000";
+  outString[2] = chx % 10 + '0';
+  chx = chx / 10;
+  outString[1] = chx % 10 + '0';
+  chx = chx / 10;
+  outString[0] = chx % 10 + '0';
+  chx = chx / 10;
+
+  client.publish(OUTTOPIC, outString);
   lastReading = millis();
   return;
 }
