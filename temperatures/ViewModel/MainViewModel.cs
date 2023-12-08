@@ -434,6 +434,21 @@ namespace temperatures.ViewModel
             }
             return chx % 1000;
         }
+
+        [RelayCommand]
+        private void ToggleDebug()
+        {
+            DebuggingVisible = !DebuggingVisible; // toggle debugging visibility
+            if(DebuggingVisible)
+            {
+                DebugHide_Text = "Hide Debugging";
+            }
+            else
+            {
+                DebugHide_Text = "Show Debugging";
+            }
+            return;
+        }
     }
 
 }
