@@ -64,6 +64,7 @@ Command="{Binding SetTempButton_PressedCommand}"
                             XAxes="{Binding XAxes}">
             </lvc:CartesianChart>
         
+        <
 
     </Grid>
 </ContentPage>

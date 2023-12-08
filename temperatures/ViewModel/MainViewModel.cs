@@ -145,6 +145,18 @@ namespace temperatures.ViewModel
         [ObservableProperty]
         public int checksumErrors = 0;
 
+        /// <summary>
+        /// Is debugging information visible?
+        /// </summary>
+        [ObservableProperty]
+        public bool debuggingVisible = false;
+
+        /// <summary>
+        /// Text for the show/hide debugging info button
+        /// </summary>
+        [ObservableProperty]
+        public string debugHide_Text = "Show Debugging";
+
         public MainViewModel()
         {
             // RX timer setup
