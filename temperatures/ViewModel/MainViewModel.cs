@@ -56,7 +56,16 @@ namespace temperatures.ViewModel
         /// </summary>
         System.Timers.Timer TXtimer = new System.Timers.Timer();
 
+        /// <summary>
+        /// The last time a temperature reading was recieved
+        /// </summary>
         DateTime lastRX;
+
+        /// <summary>
+        /// The last time a packet was transmitted
+        /// </summary>
+        DateTime lastTX;
+
         /// <summary>
         /// The current temperature
         /// </summary>
@@ -136,6 +145,11 @@ namespace temperatures.ViewModel
             RXtimer.Elapsed += RXTimer_Elapsed;
 
             // TX timer setup
+            TXtimer.Interval = 10000;
+            TXtimer.Enabled = false;
+            TXtimer.Elapsed += TXtimer_Elapsed;
+
+            // 
             lastRX = DateTime.Now;
             ConnectionStatus = "Connecting to broker...";
             client = new MqttFactory().CreateMqttClient();          // create mqtt client
@@ -158,6 +172,11 @@ namespace temperatures.ViewModel
                 }
             };
             Connect();  // connect to the MQTT broker
+        }
+
+        private void TXtimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void RXTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -243,7 +262,6 @@ namespace temperatures.ViewModel
         /// <returns></returns>
         private Task Client_ApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs arg)
         {
-            lastRX = DateTime.Now;  // save new RX time
             string rec = arg.ApplicationMessage.ConvertPayloadToString();   // get payload
 
             // check checksum
@@ -267,30 +285,51 @@ namespace temperatures.ViewModel
             // if checksum good
             PayloadIn payloadIn = JsonSerializer.Deserialize<PayloadIn>(rec); // deserialize packet
 
-            if (0 == payloadIn.DataType)    // if data reading is an air temperature
+            // case statement based on data type flag
+            switch (payloadIn.DataType)
             {
-                CurrentTemp = payloadIn.CurrentTemp;
-                while (_temperatureHistory.Count > 600) // if greater than 5 hours long (2 readings/min x 300  min)
-                {
-                    _temperatureHistory.RemoveAt(0);
-                }
-                _temperatureHistory.Add(CurrentTemp);
-            }
-            if (1 == payloadIn.DataType)    // if data in is a response to a query
-            {
-                SelectedTemp = (int)payloadIn.CurrentTemp;
+                // if data is an air temperature reading
+                case 0:
+                    lastRX = DateTime.Now;          // update last temp receive time
+                    CurrentTemp = payloadIn.CurrentTemp;
+                    while (_temperatureHistory.Count > 600) // if greater than 5 hours long (2 readings/min x 300  min)
+                    {
+                        _temperatureHistory.RemoveAt(0);    // remove old readings
+                    }
+                    _temperatureHistory.Add(CurrentTemp);  // add the new reading
+                    break;
 
-                int itemCount = payloadIn.TempHistory.Length;
-                foreach (double temp in payloadIn.TempHistory)
-                {
-                    itemCount--;
-                    axisLabels.Add(DateTime.Now.AddSeconds(-30*itemCount).ToString("HH:mm"));
-                    _temperatureHistory.Add(temp);
-                }
+                // if data in is a response to a query for temperature history data
+                case 1:
+                    SelectedTemp = (int)payloadIn.CurrentTemp;              // get current thermostat temperature
 
-                CurrentTemp = _temperatureHistory.Last();
-                
+                    int itemCount = payloadIn.TempHistory.Length;
+
+                    // parse array into temp history collection and add labels to graph
+                    foreach (double temp in payloadIn.TempHistory)
+                    {
+                        itemCount--;
+                        axisLabels.Add(DateTime.Now.AddSeconds(-30 * itemCount).ToString("HH:mm"));
+                        _temperatureHistory.Add(temp);
+                    }
+
+                    // set current temperature
+                    CurrentTemp = _temperatureHistory.Last();
+                    break;
+
+                // if acknowledging a packet with a good checksum
+                case 2:
+                    TXtimer.Enabled = false;    // tx timer not needed
+                    break;
+
+                // if acknowledging a packet, but there was a checksum error
+                case 3:
+                    ChecksumErrors++;
+                    TXtimer.Enabled = false;    // tx timer not needed
+                    break;
             }
+
+            // update view
             CurrentTempString = $"{CurrentTemp}\u00B0C";
             LastReading = DateTime.Now.ToString("HH:mm");
             return Task.CompletedTask;
