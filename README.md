@@ -1,5 +1,7 @@
 # ServoThermo
 
+Final Project for ECET 230 - Graphical User Interfaces.
+
 ServoThermo is a prototype home temperature monitoring and control software for old mechanical dial-type thermostats.
 
 A microcontroller monitors the temperature and in a room and controls a servo connected to the thermostat dial. The servo sets the thermostat dial to a temperature set by the user.
